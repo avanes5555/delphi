@@ -1,0 +1,407 @@
+unit Unit1;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,ComObj,
+  Dialogs, StdCtrls;
+
+type
+  TForm1 = class(TForm)
+    Button1: TButton;
+    Button2: TButton;
+    Button3: TButton;
+    btndataTime: TButton;
+    edt1: TEdit;
+    Button4: TButton;
+    Button5: TButton;
+    Button6: TButton;
+    Button7: TButton;
+    procedure FormCreate(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure btndataTimeClick(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+  fptr: OleVariant;
+  mark:     Array[0 .. 19] of Byte = ($52, $55, $2d, $34, $33, $30, $33, $30, $32, $2d, $41, $41, $41, $34, $30, $35, $30, $31, $30, $38);
+
+     command_byte_array: Array[0 .. 21] of Byte = ($52, $46, $52, $55, $2d, $34, $33, $30, $33, $30, $32, $2d, $41, $41, $41, $34, $30, $35, $30, $31, $30, $38);
+   command_variant:       Variant;
+      i:                     Integer;
+      answer:                Variant;
+      date: TDateTime;
+
+implementation
+
+{$R *.dfm}
+
+//function WindowFromPoint(Point: TPoint): HWnd;
+
+
+
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+    fptr := CreateOleObject('AddIn.Fptr10');
+end;
+
+
+
+
+
+procedure TForm1.Button1Click(Sender: TObject);
+var
+  settings: String;
+  serialNumber:       String;
+  configurationVersion: String;
+  hex1174: string;
+
+
+  shiftState:       Longint;
+    date: TDateTime;
+    correctionInfo: Variant;
+     isCoverOpened:           LongBool;
+
+begin
+
+
+ //settings := Format('{"%s": %s, "%s": %s, "%s": "%s", "%s": %s}',
+   // [fptr.LIBFPTR_SETTING_MODEL, IntToStr(fptr.LIBFPTR_MODEL_ATOL_AUTO),
+    //fptr.LIBFPTR_SETTING_PORT, IntToStr(fptr.LIBFPTR_PORT_COM),
+    //fptr.LIBFPTR_SETTING_COM_FILE, '53',
+    //fptr.LIBFPTR_SETTING_BAUDRATE, IntToStr(fptr.LIBFPTR_PORT_BR_115200)]);
+     //fptr.setSettings(settings);
+
+
+ShowMessage('settings');
+fptr.showProperties(fptr.LIBFPTR_GUI_PARENT_NATIVE, '0');
+
+//fptr.showProperties(fptr.LIBFPTR_GUI_PARENT_NATIVE, FindWindow('Form1',nil));
+
+
+
+
+
+//settings := fptr.getSettings;
+
+//settings := '{"AccessPassword" : "0","AutoDisableBluetooth" : false,"AutoEnableBluetooth" : true,"BaudRate" : 115200,"Bits" : 8,"ComFile" : "1","IPAddress" : "192.168.0.166","IPPort" : 5555,"'  +
+
+//'LibraryPath" : "","MACAddress" : "FF:FF:FF:FF:FF:FF","Model" : 62,"OfdChannel" : 0,"Parity" : 0,"Port" : 2,"StopBits" : 0,"UsbDevicePath" : "auto","UserPassword" : "30"}';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    fptr.setSettings(settings);
+ShowMessage(settings);
+
+fptr.open;
+
+fptr.setParam(fptr.LIBFPTR_PARAM_DATA_TYPE, fptr.LIBFPTR_DT_STATUS);
+fptr.queryData;
+
+serialNumber    := fptr.getParamStr(fptr.LIBFPTR_PARAM_SERIAL_NUMBER);
+shiftState      := fptr.getParamInt(fptr.LIBFPTR_PARAM_SHIFT_NUMBER);
+
+    isCoverOpened           := fptr.getParamBool(fptr.LIBFPTR_PARAM_COVER_OPENED);
+
+
+ ShowMessage('isCoverOpened ' + BoolToStr(isCoverOpened));
+
+
+    fptr.setParam(fptr.LIBFPTR_PARAM_DATA_TYPE, fptr.LIBFPTR_DT_UNIT_VERSION);
+    fptr.setParam(fptr.LIBFPTR_PARAM_UNIT_TYPE, fptr.LIBFPTR_UT_CONFIGURATION);
+    fptr.queryData;
+
+    configurationVersion := fptr.getParamString(fptr.LIBFPTR_PARAM_UNIT_VERSION);
+    ShowMessage(configurationVersion);
+
+    fptr.readModelFlags;
+    ShowMessage('PARAM_CAP_54FZ ' + BoolToStr(fptr.getParamBool(fptr.LIBFPTR_PARAM_CAP_54FZ)));
+    ShowMessage('MANUAL_CLICHE_CONTROL ' + BoolToStr(fptr.getParamBool(fptr.LIBFPTR_PARAM_CAP_MANUAL_CLICHE_CONTROL)));
+
+
+{
+
+
+//    fptr.setParam(fptr.LIBFPTR_PARAM_TEXT, 'Строка');
+//    fptr.printText;
+
+
+    date := StrToDate('2018-01-01');
+    fptr.setParam(1177, 'Документ основания коррекции');
+    fptr.setParam(1178, date);
+    fptr.setParam(1179, '№1234');
+    fptr.utilFormTlv;
+    correctionInfo := fptr.getParamByteArray(fptr.LIBFPTR_PARAM_TAG_VALUE);
+
+    hex1174 :=  fptr.getParamString(fptr.LIBFPTR_PARAM_TAG_VALUE);
+    ShowMessage(hex1174);
+
+
+    fptr.setParam(fptr.LIBFPTR_PARAM_RECEIPT_TYPE, fptr.LIBFPTR_RT_SELL_CORRECTION);
+    fptr.setParam(1173, 1);
+//    fptr.setParam(1174, correctionInfo);
+    fptr.setParamStrHex(1174, hex1174);
+    fptr.openReceipt;
+
+
+    fptr.setParam(fptr.LIBFPTR_PARAM_COMMODITY_NAME, '?????');
+    fptr.setParam(fptr.LIBFPTR_PARAM_PRICE, 100);
+    fptr.setParam(fptr.LIBFPTR_PARAM_QUANTITY, 5);
+    fptr.setParam(fptr.LIBFPTR_PARAM_TAX_TYPE, fptr.LIBFPTR_TAX_VAT0);
+    fptr.setParam(fptr.LIBFPTR_PARAM_USE_ONLY_TAX_TYPE, True);
+    fptr.registration;
+
+
+    fptr.setParam(fptr.LIBFPTR_PARAM_SUM, 500.00);
+    fptr.receiptTotal;
+
+    fptr.closeReceipt;
+}
+
+end;
+
+
+procedure TForm1.Button2Click(Sender: TObject);
+Var   Res: TDateTime;
+
+    receiptType:           Longint;
+    receiptNumber:  Longint;
+    documentNumber: Longint;
+    sum:            Double;
+    remainder:      Double;
+    change:         Double;
+    isCoverOpened:           LongBool;
+    dateTime:   TDateTime;
+    dateTimest: string;
+
+ begin
+//    Res:= StrToDate('2018-01-01');
+//    ShowMessage(DateToStr(res));
+    fptr.showProperties(fptr.LIBFPTR_GUI_PARENT_NATIVE, '0');
+    fptr.open;
+    fptr.setParam(fptr.LIBFPTR_PARAM_DATA_TYPE, fptr.LIBFPTR_DT_RECEIPT_STATE);
+    fptr.queryData;
+
+    receiptType            := fptr.getParamInt(fptr.LIBFPTR_PARAM_RECEIPT_TYPE);
+    receiptNumber   := fptr.getParamInt(fptr.LIBFPTR_PARAM_RECEIPT_NUMBER);
+    documentNumber  := fptr.getParamInt(fptr.LIBFPTR_PARAM_DOCUMENT_NUMBER);
+    sum             := fptr.getParamDouble(fptr.LIBFPTR_PARAM_RECEIPT_SUM);
+    remainder       := fptr.getParamDouble(fptr.LIBFPTR_PARAM_REMAINDER);
+    change          := fptr.getParamDouble(fptr.LIBFPTR_PARAM_CHANGE);
+
+
+//    ShowMessage(IntToStr((receiptType)));
+
+
+fptr.setParam(fptr.LIBFPTR_PARAM_DATA_TYPE, fptr.LIBFPTR_DT_STATUS);
+fptr.queryData;
+
+
+    isCoverOpened           := fptr.getParamBool(fptr.LIBFPTR_PARAM_COVER_OPENED);
+
+
+    fptr.setParam(fptr.LIBFPTR_PARAM_DATA_TYPE, fptr.LIBFPTR_DT_SHIFT_STATE);
+    fptr.queryData;
+
+    dateTime    := fptr.getParamDateTime(fptr.LIBFPTR_PARAM_DATE_TIME);
+    dateTimest    := fptr.getParamString(fptr.LIBFPTR_PARAM_DATE_TIME);
+
+
+ ShowMessage('dateTime: ' + FormatDateTime('c', dateTime));
+ ShowMessage('dateTime-st: ' + dateTimest);
+
+
+ end;
+
+
+procedure TForm1.Button3Click(Sender: TObject);
+var
+ t: Boolean;
+begin
+ t:= true;
+ ShowMessage(BoolToStr(t, true));
+
+end;
+
+procedure TForm1.btndataTimeClick(Sender: TObject);
+
+var
+      state:      Longint;
+    number:     Longint;
+    dateTime:   TDateTime;
+begin
+
+
+  
+    fptr.showProperties(fptr.LIBFPTR_GUI_PARENT_NATIVE, FindWindow('Form1',nil));
+  fptr.open;
+
+    fptr.showProperties(fptr.LIBFPTR_GUI_PARENT_NATIVE, '0');
+    fptr.setParam(fptr.LIBFPTR_PARAM_DATA_TYPE, fptr.LIBFPTR_DT_SHIFT_STATE);
+    fptr.queryData;
+
+    state       := fptr.getParamInt(fptr.LIBFPTR_PARAM_SHIFT_STATE);
+    number      := fptr.getParamInt(fptr.LIBFPTR_PARAM_SHIFT_NUMBER);
+    dateTime    := fptr.getParamDateTime(fptr.LIBFPTR_PARAM_DATE_TIME);
+
+
+    
+
+
+
+end;
+
+
+procedure TForm1.Button4Click(Sender: TObject);
+
+
+
+
+var
+    cashSum: Double;
+begin
+    fptr.setParam(fptr.LIBFPTR_PARAM_DATA_TYPE, fptr.LIBFPTR_DT_CASH_SUM);
+    fptr.queryData;
+
+    cashSum := fptr.getParamDouble(fptr.LIBFPTR_PARAM_SUM);
+end;
+
+procedure TForm1.Button5Click(Sender: TObject);
+
+
+var
+      //mark:     Array[0 .. 19] of Byte = ($52, $55, $2d, $34, $33, $30, $33, $30, $32, $2d, $41, $41, $41, $34, $30, $35, $30, $31, $30, $38);
+      //mark: array[0 .. 19] of Byte;
+
+      i:        Integer;
+      mark_var: Variant;
+     result: String;
+        //result: widechar
+
+
+      //const
+    //command_byte_array:    Array[0 .. 19] of Byte = ($15, $20, $04, $41, $A9, $80, $EC, $16, $54, $54, $54, $30, $30, $30, $30, $30, $34, $39, $34, $39);
+
+begin
+
+
+
+
+
+
+
+    fptr := CreateOleObject('AddIn.Fptr10');
+    fptr.setSingleSetting(fptr.LIBFPTR_SETTING_MODEL, IntToStr(fptr.LIBFPTR_MODEL_ATOL_AUTO));
+    fptr.setSingleSetting(fptr.LIBFPTR_SETTING_PORT, IntToStr(fptr.LIBFPTR_PORT_COM));
+    fptr.setSingleSetting(fptr.LIBFPTR_SETTING_COM_FILE, 'COM9');
+    fptr.setSingleSetting(fptr.LIBFPTR_SETTING_BAUDRATE, IntToStr(fptr.LIBFPTR_PORT_BR_115200));
+    fptr.applySingleSettings;
+
+    // Соединение с ККТ
+    fptr.open;
+
+
+
+    fptr.setParam(fptr.LIBFPTR_PARAM_JSON_DATA, '');
+    fptr.processJson;
+
+    result := fptr.getParamString(fptr.LIBFPTR_PARAM_JSON_DATA);
+
+
+//    fptr.setParam(1021, 'Кассир Иванов И.');
+//    fptr.setParam(1203, '123456789047');
+//    fptr.operatorLogin;
+//
+//    fptr.setParam(fptr.LIBFPTR_PARAM_RECEIPT_TYPE, fptr.LIBFPTR_RT_SELL);
+//    fptr.openReceipt;
+//
+//    fptr.setParam(fptr.LIBFPTR_PARAM_COMMODITY_NAME, 'Товар');
+//    fptr.setParam(fptr.LIBFPTR_PARAM_PRICE, 100);
+//    fptr.setParam(fptr.LIBFPTR_PARAM_QUANTITY, 5.10);
+//    fptr.setParam(fptr.LIBFPTR_PARAM_TAX_TYPE, fptr.LIBFPTR_TAX_VAT0);
+//    fptr.setParam(fptr.LIBFPTR_PARAM_TAX_SUM, 510.00);
+//
+//      mark_var := VarArrayCreate([0, high(mark)], varByte);
+//    for i := VarArrayLowBound(mark_var, 1) to VarArrayHighBound(mark_var, 1) do
+//    begin
+//        VarArrayPut(mark_var, mark[i], [i]);
+//    end;
+//    fptr.setParam(fptr.LIBFPTR_PARAM_MARKING_CODE, mark_var);
+//
+//    fptr.registration;
+//
+//    fptr.closeReceipt;
+
+end;
+
+procedure TForm1.Button6Click(Sender: TObject);
+
+
+
+
+
+begin
+
+
+    fptr.showProperties(fptr.LIBFPTR_GUI_PARENT_NATIVE, '0');
+    fptr.open;
+
+    fptr.cancelReceipt;
+    fptr.setParam(1021, 'Кассир Иванов И.');
+    fptr.setParam(1203, '123456789047');
+    fptr.operatorLogin;
+
+    fptr.setParam(fptr.LIBFPTR_PARAM_RECEIPT_TYPE, fptr.LIBFPTR_RT_SELL);
+    fptr.openReceipt;
+    fptr.setParam(fptr.LIBFPTR_PARAM_COMMODITY_NAME, 'Товар');
+    fptr.setParam(fptr.LIBFPTR_PARAM_PRICE, 100);
+    fptr.setParam(fptr.LIBFPTR_PARAM_QUANTITY, 5.10);
+    fptr.setParam(fptr.LIBFPTR_PARAM_TAX_TYPE, fptr.LIBFPTR_TAX_VAT0);
+    fptr.setParam(fptr.LIBFPTR_PARAM_TAX_SUM, 510.00);
+
+    command_variant := VarArrayCreate([0, high(command_byte_array)], varByte);
+    for i := VarArrayLowBound(command_variant, 1) to VarArrayHighBound(command_variant, 1) do
+    begin
+        VarArrayPut(command_variant, command_byte_array[i], [i]);
+    end;
+    fptr.setParam(1162, command_variant);
+
+    fptr.registration;
+
+    fptr.closeReceipt;
+end;
+
+procedure TForm1.Button7Click(Sender: TObject);
+
+begin
+ date := StrToDateTime('20.02.2020 12:30:00');
+    fptr.setParam(fptr.LIBFPTR_PARAM_DATE_TIME, date);
+    fptr.writeDateTime;
+end;
+
+end.
+

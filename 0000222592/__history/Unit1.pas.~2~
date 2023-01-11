@@ -1,0 +1,54 @@
+unit Unit1;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ComObj;
+
+type
+  TForm1 = class(TForm)
+    Button1: TButton;
+    btnSetting: TButton;
+    procedure Button1Click(Sender: TObject);
+    procedure btnSettingClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+  settings: String;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm1.Button1Click(Sender: TObject);
+var
+    fptr: OleVariant;
+begin
+    fptr := CreateOleObject('AddIn.Fptr10');
+    fptr.showProperties(fptr.LIBFPTR_GUI_PARENT_NATIVE, 0);
+    showmessage(IntToStr(fptr.errorCode));
+
+    {fptr.setSingleSetting(fptr.LIBFPTR_SETTING_MODEL, IntToStr(fptr.LIBFPTR_MODEL_ATOL_AUTO));
+    fptr.setSingleSetting(fptr.LIBFPTR_SETTING_PORT, IntToStr(fptr.LIBFPTR_PORT_COM));
+    fptr.setSingleSetting(fptr.LIBFPTR_SETTING_COM_FILE, 39);
+    fptr.setSingleSetting(fptr.LIBFPTR_SETTING_BAUDRATE, IntToStr(fptr.LIBFPTR_PORT_BR_115200));
+    fptr.applySingleSettings;
+
+    fptr.open;
+    fptr.setParam(fptr.LIBFPTR_PARAM_REPORT_TYPE, fptr.LIBFPTR_RT_X);
+    fptr.report; }
+end;
+
+procedure TForm1.btnSettingClick(Sender: TObject);
+begin
+
+    //fptr.showProperties(fptr.LIBFPTR_GUI_PARENT_NATIVE, 0);
+end;
+
+end.
